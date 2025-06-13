@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Roulette: Chaos Goblin Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #fff, 0 0 10px #ff00de, 0 0 15px #ff00de; }
+            to { text-shadow: 0 0 10px #fff, 0 0 20px #ff00de, 0 0 30px #ff00de; }
+        }
+
+        .title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .tagline {
+            font-style: italic;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .wheel-container {
+            position: relative;
+            display: inline-block;
+            margin: 30px 0;
+        }
+
+        .wheel {
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #fff;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .slice {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: right bottom;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px 10px;
+            box-sizing: border-box;
+        }
+
+        .slice:nth-child(1) {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            transform: rotate(0deg);
+        }
+        .slice:nth-child(2) {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            transform: rotate(60deg);
+        }
+        .slice:nth-child(3) {
+            background: linear-gradient(45deg, #45b7d1, #3498db);
+            transform: rotate(120deg);
+        }
+        .slice:nth-child(4) {
+            background: linear-gradient(45deg, #96ceb4, #81c784);
+            transform: rotate(180deg);
+        }
+        .slice:nth-child(5) {
+            background: linear-gradient(45deg, #feca57, #ff9500);
+            transform: rotate(240deg);
+        }
+        .slice:nth-child(6) {
+            background: linear-gradient(45deg, #ff9ff3, #f368e0);
+            transform: rotate(300deg);
+        }
+
+        .slice-text {
+            transform: rotate(-30deg);
+            white-space: nowrap;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #ffd700;
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .spin-button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .spin-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        .result {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-description {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .ritual-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .ritual-input {
+            width: 100%;
+            min-height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            backdrop-filter: blur(5px);
+        }
+
+        .ritual-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .ritual-input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .chaos-text {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .wheel {
+                width: 300px;
+                height: 300px;
+            }
+            .title {
+                font-size: 2em;
+            }
+            .slice-text {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">🎲 Mood Roulette</div>
+            <div class="subtitle">Intermission Page</div>
+            <div class="tagline">Spin the emotional wheel of fortune to find out what's fucking up your timeline today!</div>
+        </div>
+
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <div class="slice">
+                    <div class="slice-text">🎭<br>Existential<br>Crisis</div>
+                </div>
+                <div class="slice">
+                    <div class="slice-text">😵<br>Sensory<br>Overload</div>
+                </div>
+                <div class="slice">
+                    <div class="slice-text">🧃<br>Forgot<br>to Eat</div>
+                </div>
+                <div class="slice">
+                    <div class="slice-text">🫠<br>Time Hole<br>(Scroll Edition)</div>
+                </div>
+                <div class="slice">
+                    <div class="slice-text">😤<br>Tried to Do It All<br>in 1 Hour, Failed</div>
+                </div>
+                <div class="slice">
+                    <div class="slice-text">💀<br>Scheduled a Breakdown<br>Instead of a Break</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="spin-button" id="spinBtn">SPIN THE CHAOS</button>
+
+        <div class="result" id="result">
+            <div class="result-text">Ready to discover your current malfunction?</div>
+            <div class="result-description">Hit that button and let the universe tell you what's already obvious.</div>
+        </div>
+
+        <div class="ritual-section">
+            <h3>🔮 Your Spell or Revenge Ritual:</h3>
+            <p style="margin-bottom: 15px;">Write a spell to banish this mood, or plot revenge against the timeline that wronged you. (Or just circle it and give it a name like "Sir Timewarp the III.")</p>
+            <textarea class="ritual-input" id="ritualText" placeholder="Dear Universe, today I shall hex the concept of productivity because...
+
+OR
+
+Sir Doomscroll the Infinite, I name thee and banish thee to the shadow realm of deleted apps...
+
+OR
+
+A spell to summon functional executive function: By the power of caffeine and spite, I command thee..."></textarea>
+            <div class="chaos-text">Remember: Chaos magic works best when you're already unhinged. ✨</div>
+        </div>
+    </div>
+
+    <script>
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const result = document.getElementById('result');
+
+        const moods = [
+            {
+                name: "🎭 Existential Crisis",
+                description: "You're questioning everything. Why do we even have timelines? What is time? Who decided Tuesday was a thing?"
+            },
+            {
+                name: "😵 Sensory Overload",
+                description: "The world is too loud, too bright, too much. Even your own thoughts are wearing scratchy sweaters."
+            },
+            {
+                name: "🧃 Forgot to Eat",
+                description: "It's 4 PM and you just realized you've been running on anxiety and the memory of breakfast. Again."
+            },
+            {
+                name: "🫠 Time Hole (Scroll Edition)",
+                description: "You opened TikTok for 'just a second' and emerged 3 hours later knowing everything about Victorian mourning jewelry."
+            },
+            {
+                name: "😤 Tried to Do It All in 1 Hour, Failed",
+                description: "You scheduled 47 tasks between lunch and dinner. Spoiler alert: You did none of them and ordered takeout instead."
+            },
+            {
+                name: "💀 Scheduled a Breakdown Instead of a Break",
+                description: "Self-care? Never heard of her. You've penciled in your mental collapse for Thursday at 3 PM, right after the meeting."
+            }
+        ];
+
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        spinBtn.addEventListener('click', () => {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'SPINNING...';
+            
+            // Random spin amount (multiple full rotations plus random position)
+            const spinAmount = 1440 + Math.random() * 1800; // 4-9 full rotations
+            currentRotation += spinAmount;
+            
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            
+            // Calculate which slice we landed on
+            const normalizedRotation = currentRotation % 360;
+            const sliceIndex = Math.floor((360 - normalizedRotation + 30) / 60) % 6;
+            
+            setTimeout(() => {
+                const selectedMood = moods[sliceIndex];
+                result.innerHTML = `
+                    <div class="result-text">${selectedMood.name}</div>
+                    <div class="result-description">${selectedMood.description}</div>
+                `;
+                
+                isSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.textContent = 'SPIN AGAIN (Because why not make it worse?)';
+            }, 4000);
+        });
+
+        // Add some sparkle effects
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.style.position = 'fixed';
+            sparkle.style.left = Math.random() * 100 + 'vw';
+            sparkle.style.top = Math.random() * 100 + 'vh';
+            sparkle.style.width = '4px';
+            sparkle.style.height = '4px';
+            sparkle.style.background = '#ffd700';
+            sparkle.style.borderRadius = '50%';
+            sparkle.style.pointerEvents = 'none';
+            sparkle.style.zIndex = '1000';
+            sparkle.style.animation = 'sparkle 2s ease-out forwards';
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+            }, 2000);
+        }
+
+        // Add sparkle keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes sparkle {
+                0% {
+                    opacity: 1;
+                    transform: scale(0) rotate(0deg);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scale(1) rotate(180deg);
+                }
+                100% {
+                    opacity: 0;
+                    transform: scale(0) rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Create sparkles periodically
+        setInterval(createSparkle, 1000);
+    </script>
+</body>
+</html>
